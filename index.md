@@ -39,12 +39,9 @@ Un document est composé de deux parties principales : l'en-tête (header) et le
 
 ### Formats Supportés
 
-- **XML** : Le document est structuré avec des balises `<document>`, `<header>` et `<body>`.
-  Exemple :
-  ```xml
-  <document>
-    <header title="Simple example"></header>
-    <body>
-      <paragraph>This is a simple example</paragraph>
-    </body>
-  </document>
+- **XML** : Le document est structuré avec des balises `<document>`, `<header>` et `<body>`. Le contenu est placé entre ces balises.
+
+- **JSON** : Le document est représenté par un objet JSON avec des clés `header` et `body`. Le titre est contenu dans la clé `title` sous l'objet `header`, et le corps du document est une liste sous la clé `body`.
+
+- **Markdown** : Le document utilise la syntaxe Markdown. Le titre du document est spécifié en haut du fichier sous forme de métadonnées, suivi du contenu principal.
+
