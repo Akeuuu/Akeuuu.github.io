@@ -1,49 +1,50 @@
----
-title: "Documentation Mypandoc"
----
+# mypandoc: A Simplified Document Converter
 
-# Mypandoc — Documentation Technique
+## Introduction
 
-Bienvenue dans la documentation du projet **Mypandoc**.  
-Ce site a été généré avec [GitHub Pages](https://pages.github.com/) en Markdown.
+`mypandoc` est une version simplifiée de Pandoc, un convertisseur de documents populaire et open-source. Ce programme permet de convertir des documents d'un format à un autre, en prenant en charge les formats XML, JSON et Markdown. Il est écrit en Haskell et utilise une bibliothèque de parsing personnalisée pour gérer la conversion.
 
----
+## Fonctionnalités
 
-## 📦 Présentation du projet
+Le programme prend un fichier en entrée et le convertit dans un autre format. Il prend en charge les formats suivants :
+- XML
+- JSON
+- Markdown
 
-**Mypandoc** est un outil de conversion de documents basé sur un parseur Haskell personnalisé.  
-Il supporte la transformation de fichiers XML vers une structure de document type `Document`, `Header`, `Block`, et `Inline`.
+### Structure du Document
 
----
+Un document est composé de deux parties principales : l'en-tête (header) et le corps (content).
 
-## 📁 Arbores
+1. **En-tête** :
+   - **Title** : Le titre du document.
+   - **Author** (facultatif) : L'auteur du document.
+   - **Date** (facultatif) : La date de création du document.
 
----
+2. **Contenu** :
+   - **Texte** : Séquence de caractères ASCII.
+   - **Formatage** : 
+     - Italique
+     - Gras
+     - Code
+   - **Liens et Images** : 
+     - Lien : Composé de texte et contenu supplémentaire.
+     - Image : Composé de texte et contenu supplémentaire.
+   - **Éléments structurels** :
+     - Paragraphe
+     - Section
+     - Bloc de code
+   - **Listes** :
+     - Liste
+     - Élément de liste
 
-## 🛠️ Fonctions clés
+### Formats Supportés
 
-- `xmlToDocument :: XmlValue -> Maybe Document`
-- `valueToBlock :: XmlValue -> Maybe Block`
-- `valuesToInlines :: [XmlValue] -> Maybe [Inline]`
-
----
-
-## 🔍 Objectifs
-
-- ✅ Parser XML custom
-- ✅ Conversion vers un format de document type Markdown
-- ⏳ Ajout d’un support JSON
-- ⏳ Génération PDF via pandoc
-
----
-
-## ✍️ Auteurs
-
-- Max Roiron  
-- Projet réalisé dans le cadre de l’Epitech
-
----
-
-## 📄 Licence
-
-Projet sous licence MIT — libre d’usage, modification et diffusion.
+- **XML** : Le document est structuré avec des balises `<document>`, `<header>` et `<body>`.
+  Exemple :
+  ```xml
+  <document>
+    <header title="Simple example"></header>
+    <body>
+      <paragraph>This is a simple example</paragraph>
+    </body>
+  </document>
