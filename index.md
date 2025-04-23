@@ -63,3 +63,63 @@ Si des options invalides sont fournies, le programme renverra un code d'erreur 8
 
 ```bash
 ./mypandoc -f markdown -i example/example.xml
+
+## 📄 Structure de Données
+
+Le programme utilise plusieurs types de données pour représenter la structure d'un document. Ces types sont définis comme suit :
+
+### `Document`
+
+Le type `Document` représente un document complet, comprenant un en-tête et un corps de contenu.
+
+```haskell
+-- Represents a full document
+data Document = Document
+  { header  :: Header
+  , content :: [Block]
+  } deriving (Show, Eq)
+
+La structure Document contient le Header et le body (content) détaillés précédemment.
+
+-- Metadata at the top of the document
+data Header = Header
+  { title  :: String
+  , author :: Maybe String
+  , date   :: Maybe String
+  } deriving (Show, Eq)
+
+Le header n'est autre qu'un titre et potentiellement un autheur et suivis d'une date
+
+
+data Block
+  = Paragraph [Inline]       -- Regular paragraph
+  | Section (Maybe String) [Block]  -- Optional title, nested blocks
+  | CodeBlock Block         -- Code block as string
+  | List [Block]              -- List of items
+  deriving (Show, Eq)
+
+La structure block est celle qui représente les paragraphes/section/code block/list
+
+Paragraphes ([Inline] -> liste de string avec ses spécificités ex : italique / grasse ou un lien)
+Section ((Maybe String) -> pour le titre de la section
+         [Block] -> est une liste de block elle même car une secton contient plusieurs block)
+Code Block (Block -> forcément un paragraphe)
+List    ([Block] -> similaire à une section sans maybe string)
+
+data Inline
+  = PlainText String
+  | Italic Inline
+  | Bold Inline
+  | Code Inline
+  | Link String [Inline]    -- href + description
+  | Image String [Inline]   -- src + alt text
+  deriving (Show, Eq)
+
+Plaintext (String -> pour du texte)
+Italic (Inline -> pour spécifier un autre type de texte ou du texte)
+Bold (Inline -> pour spécifier un autre type de texte ou du texte)
+Code (Inline -> pour spécifier un autre type de texte ou du texte)
+Link (String -> url
+      [Inline] -> pour spécifier un autre type de texte ou du texte)
+Image (String -> src
+       [Inline] -> pour spécifier un autre type de texte ou du texte)
