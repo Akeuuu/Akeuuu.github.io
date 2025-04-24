@@ -74,7 +74,6 @@ Le type `Document` représente un document complet, comprenant un en-tête et un
 
 ### Structure de Document (Haskell)
 
-```haskell
 -- Représente un document complet, avec un en-tête (header) et un corps (content)
 data Document = Document
   { header  :: Header        -- Métadonnées du document
