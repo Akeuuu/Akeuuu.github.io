@@ -176,68 +176,67 @@ data Inline
 - Tous les types dérivent `Show` et `Eq` pour le débogage et la comparaison
 - Le `CodeBlock` contient un `Block` qui serait typiquement un `Paragraph` avec `PlainText`
 
-```markdown
 ## Implémentation d'Extensions
 
 Pour ajouter un nouveau format (par exemple YAML), vous devez suivre ce pattern :
 
 1. Créer deux modules de conversion :
    ```haskell
-   -- Conversion depuis le nouveau format
-   YamlToDoc.hs
-   -- Conversion vers le nouveau format
-   DocToYaml.hs
+    -- Conversion depuis le nouveau format
+    YamlToDoc.hs
+    -- Conversion vers le nouveau format
+    DocToYaml.hs
    ```
 
 2. Implémenter les fonctions principales :
    ```haskell
-   -- Dans YamlToDoc.hs
-   yamlToDoc :: YamlValue -> Document
+    -- Dans YamlToDoc.hs
+    yamlToDoc :: YamlValue -> Document
 
-   -- Dans DocToYaml.hs
-   docToYaml :: Document -> YamlValue
+    -- Dans DocToYaml.hs
+    docToYaml :: Document -> YamlValue
    ```
 
 3. Ajouter le parser dans Parser.hs :
    ```haskell
-   parseYaml :: Parser YamlValue
+    parseYaml :: Parser YamlValue
    ```
 
 4. Implémenter la fonction d'écriture :
    ```haskell
-   writeYaml :: Document -> String -> IO ()
-   writeYaml doc outputPath =
-       if outputPath /= ""
-           then writeFile outputPath (printYaml (docToYaml doc))
-           else putStrLn (printYaml (docToYaml doc))
+    writeYaml :: Document -> String -> IO ()
+    writeYaml doc outputPath =
+        if outputPath /= ""
+            then writeFile outputPath (printYaml (docToYaml doc))
+            else putStrLn (printYaml (docToYaml doc))
    ```
 
 5. Ajouter le support dans la fonction principale :
    ```haskell
-   pandocYaml :: String -> String -> Conf -> IO ()
-   pandocYaml content outputPath conf =
-       case runParser parseYaml content of
-           Nothing -> putStrLn "Échec de l'analyse YAML" >> exitError
-           Just (value, _) ->
-               case fromMaybe "" (outForm conf) of
-                   "json" -> writeJson (yamlToDoc value) outputPath
-                   "xml" -> writeXml (yamlToDoc value) outputPath
-                   "markdown" -> writeMd (yamlToDoc value) outputPath
-                   "yaml" -> writeYaml (yamlToDoc value) outputPath
-                   _ -> exitError
+    pandocYaml :: String -> String -> Conf -> IO ()
+    pandocYaml content outputPath conf =
+        case runParser parseYaml content of
+            Nothing -> putStrLn "Échec de l'analyse YAML" >> exitError
+            Just (value, _) ->
+                case fromMaybe "" (outForm conf) of
+                    "json" -> writeJson (yamlToDoc value) outputPath
+                    "xml" -> writeXml (yamlToDoc value) outputPath
+                    "markdown" -> writeMd (yamlToDoc value) outputPath
+                    "yaml" -> writeYaml (yamlToDoc value) outputPath
+                    _ -> exitError
    ```
 
 6. Mettre à jour writePandoc :
    ```haskell
-   writePandoc :: Conf -> String -> String -> IO ()
-   writePandoc conf content outputPath =
-       case fromMaybe "" (inForm conf) of
-           "json" -> pandocJson content outputPath conf
-           "xml" -> pandocXml content outputPath conf
-           "markdown" -> pandocMarkdown content outputPath conf
-           "yaml" -> pandocYaml content outputPath conf
-           "" -> guessFormat content outputPath conf
-           _ -> exitError
+    writePandoc :: Conf -> String -> String -> IO ()
+    writePandoc conf content outputPath =
+        case fromMaybe "" (inForm conf) of
+            "json" -> pandocJson content outputPath conf
+            "xml" -> pandocXml content outputPath conf
+            "markdown" -> pandocMarkdown content outputPath conf
+            "yaml" -> pandocYaml content outputPath conf
+            "" -> guessFormat content outputPath conf
+            _ -> exitError
    ```
 
 ### Architecture Type
