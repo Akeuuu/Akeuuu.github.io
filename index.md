@@ -72,54 +72,38 @@ Le programme utilise plusieurs types de données pour représenter la structure 
 
 Le type `Document` représente un document complet, comprenant un en-tête et un corps de contenu.
 
+### Structure de Document (Haskell)
+
 ```haskell
--- Represents a full document
+-- Représente un document complet, avec un en-tête (header) et un corps (content)
 data Document = Document
-  { header  :: Header
-  , content :: [Block]
+  { header  :: Header        -- Métadonnées du document
+  , content :: [Block]       -- Corps du document composé de blocs
   } deriving (Show, Eq)
 
-La structure Document contient le Header et le body (content) détaillés précédemment.
-
--- Metadata at the top of the document
+-- Le header n'est autre qu'un titre, potentiellement un auteur, et une date
 data Header = Header
-  { title  :: String
-  , author :: Maybe String
-  , date   :: Maybe String
+  { title  :: String         -- Titre du document (obligatoire)
+  , author :: Maybe String   -- Auteur (optionnel)
+  , date   :: Maybe String   -- Date de création (optionnelle)
   } deriving (Show, Eq)
 
-Le header n'est autre qu'un titre et potentiellement un autheur et suivis d'une date
-
-
+-- La structure Block représente les éléments de contenu principaux :
+-- paragraphes, sections, blocs de code, listes
 data Block
-  = Paragraph [Inline]       -- Regular paragraph
-  | Section (Maybe String) [Block]  -- Optional title, nested blocks
-  | CodeBlock Block         -- Code block as string
-  | List [Block]              -- List of items
+  = Paragraph [Inline]             -- Paragraphe avec du texte enrichi (liste d'Inline)
+  | Section (Maybe String) [Block] -- Section avec titre optionnel et blocs imbriqués
+  | CodeBlock Block                -- Bloc de code, contenu sous forme de Block (souvent un paragraphe)
+  | List [Block]                   -- Liste de blocs, similaire à une Section sans titre
   deriving (Show, Eq)
 
-La structure block est celle qui représente les paragraphes/section/code block/list
-
-Paragraphes ([Inline] -> liste de string avec ses spécificités ex : italique / grasse ou un lien)
-Section ((Maybe String) -> pour le titre de la section
-         [Block] -> est une liste de block elle même car une secton contient plusieurs block)
-Code Block (Block -> forcément un paragraphe)
-List    ([Block] -> similaire à une section sans maybe string)
-
+-- Inline représente les éléments textuels à l’intérieur d’un paragraphe
 data Inline
-  = PlainText String
-  | Italic Inline
-  | Bold Inline
-  | Code Inline
-  | Link String [Inline]    -- href + description
-  | Image String [Inline]   -- src + alt text
+  = PlainText String               -- Texte brut
+  | Italic Inline                  -- Texte en italique (Inline imbriqué)
+  | Bold Inline                    -- Texte en gras (Inline imbriqué)
+  | Code Inline                    -- Texte formaté comme du code (Inline imbriqué)
+  | Link String [Inline]           -- Lien : URL + description en Inline
+  | Image String [Inline]          -- Image : source + texte alternatif
   deriving (Show, Eq)
 
-Plaintext (String -> pour du texte)
-Italic (Inline -> pour spécifier un autre type de texte ou du texte)
-Bold (Inline -> pour spécifier un autre type de texte ou du texte)
-Code (Inline -> pour spécifier un autre type de texte ou du texte)
-Link (String -> url
-      [Inline] -> pour spécifier un autre type de texte ou du texte)
-Image (String -> src
-       [Inline] -> pour spécifier un autre type de texte ou du texte)
