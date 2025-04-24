@@ -65,10 +65,6 @@ Si des options invalides sont fournies, le programme renverra un code d'erreur 8
 ./mypandoc -f markdown -i example/example.xml
 ```
 
-## 📄 Structure de Données
-
-Le programme utilise plusieurs types de données pour représenter la structure d'un document. Ces types sont définis comme suit :
-
 # Documentation des Structures de Données de Document
 
 Ce document décrit les types de données Haskell utilisés pour représenter un document structuré avec métadonnées, blocs de contenu et formatage de texte.
@@ -130,7 +126,7 @@ data Block
 
 3. **CodeBlock**
    - Contient un seul `Block` représentant le code
-   - Contient typiquement du texte non formaté
+   - Contient typiquement un seul paragraphe
 
 4. **List**
    - `[Block]` - Éléments de liste (blocs)
@@ -179,4 +175,80 @@ data Inline
 - Les types Maybe indiquent des champs optionnels
 - Tous les types dérivent `Show` et `Eq` pour le débogage et la comparaison
 - Le `CodeBlock` contient un `Block` qui serait typiquement un `Paragraph` avec `PlainText`
+
+```markdown
+## Implémentation d'Extensions
+
+Pour ajouter un nouveau format (par exemple YAML), vous devez suivre ce pattern :
+
+1. Créer deux modules de conversion :
+   ```haskell
+   -- Conversion depuis le nouveau format
+   YamlToDoc.hs
+   -- Conversion vers le nouveau format
+   DocToYaml.hs
+   ```
+
+2. Implémenter les fonctions principales :
+   ```haskell
+   -- Dans YamlToDoc.hs
+   yamlToDoc :: YamlValue -> Document
+
+   -- Dans DocToYaml.hs
+   docToYaml :: Document -> YamlValue
+   ```
+
+3. Ajouter le parser dans Parser.hs :
+   ```haskell
+   parseYaml :: Parser YamlValue
+   ```
+
+4. Implémenter la fonction d'écriture :
+   ```haskell
+   writeYaml :: Document -> String -> IO ()
+   writeYaml doc outputPath =
+       if outputPath /= ""
+           then writeFile outputPath (printYaml (docToYaml doc))
+           else putStrLn (printYaml (docToYaml doc))
+   ```
+
+5. Ajouter le support dans la fonction principale :
+   ```haskell
+   pandocYaml :: String -> String -> Conf -> IO ()
+   pandocYaml content outputPath conf =
+       case runParser parseYaml content of
+           Nothing -> putStrLn "Échec de l'analyse YAML" >> exitError
+           Just (value, _) ->
+               case fromMaybe "" (outForm conf) of
+                   "json" -> writeJson (yamlToDoc value) outputPath
+                   "xml" -> writeXml (yamlToDoc value) outputPath
+                   "markdown" -> writeMd (yamlToDoc value) outputPath
+                   "yaml" -> writeYaml (yamlToDoc value) outputPath
+                   _ -> exitError
+   ```
+
+6. Mettre à jour writePandoc :
+   ```haskell
+   writePandoc :: Conf -> String -> String -> IO ()
+   writePandoc conf content outputPath =
+       case fromMaybe "" (inForm conf) of
+           "json" -> pandocJson content outputPath conf
+           "xml" -> pandocXml content outputPath conf
+           "markdown" -> pandocMarkdown content outputPath conf
+           "yaml" -> pandocYaml content outputPath conf
+           "" -> guessFormat content outputPath conf
+           _ -> exitError
+   ```
+
+### Architecture Type
+
+Pour chaque nouveau format X, implémenter :
+
+1. XToDoc.hs (conversion vers Document)
+2. DocToX.hs (conversion depuis Document)
+3. Parser X dans Parser.hs
+4. Fonction pandocX suivant le même pattern
+5. Fonction writeX pour l'output
+
+Le système est conçu pour que tout nouveau format puisse être converti vers/à partir du type Document, qui sert de format intermédiaire.
 ```
