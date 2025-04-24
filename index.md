@@ -68,41 +68,115 @@ Si des options invalides sont fournies, le programme renverra un code d'erreur 8
 
 Le programme utilise plusieurs types de données pour représenter la structure d'un document. Ces types sont définis comme suit :
 
-### `Document`
+```markdown
+# Documentation des Structures de Données de Document
 
-Le type `Document` représente un document complet, comprenant un en-tête et un corps de contenu.
+Ce document décrit les types de données Haskell utilisés pour représenter un document structuré avec métadonnées, blocs de contenu et formatage de texte.
 
-### Structure de Document (Haskell)
+## Structure du Document
 
--- Représente un document complet, avec un en-tête (header) et un corps (content)
+Représente un document complet avec un en-tête et un contenu.
+
+```haskell
 data Document = Document
-  { header  :: Header        -- Métadonnées du document
-  , content :: [Block]       -- Corps du document composé de blocs
+  { header  :: Header
+  , content :: [Block]
   } deriving (Show, Eq)
+```
 
--- Le header n'est autre qu'un titre, potentiellement un auteur, et une date
+**Champs :**
+- `header` - Métadonnées en haut du document (titre, auteur, date)
+- `content` - Le contenu principal sous forme de liste de blocs
+
+### `Header`
+Contient les métadonnées en-tête du document.
+
+```haskell
 data Header = Header
-  { title  :: String         -- Titre du document (obligatoire)
-  , author :: Maybe String   -- Auteur (optionnel)
-  , date   :: Maybe String   -- Date de création (optionnelle)
+  { title  :: String
+  , author :: Maybe String
+  , date   :: Maybe String
   } deriving (Show, Eq)
+```
 
--- La structure Block représente les éléments de contenu principaux :
--- paragraphes, sections, blocs de code, listes
+**Champs :**
+- `title` - Titre du document (obligatoire)
+- `author` - Nom de l'auteur (optionnel)
+- `date` - Date (optionnelle)
+
+## Blocs de Contenu
+
+### `Block`
+Représente les différents types de blocs de contenu.
+
+```haskell
 data Block
-  = Paragraph [Inline]             -- Paragraphe avec du texte enrichi (liste d'Inline)
-  | Section (Maybe String) [Block] -- Section avec titre optionnel et blocs imbriqués
-  | CodeBlock Block                -- Bloc de code, contenu sous forme de Block (souvent un paragraphe)
-  | List [Block]                   -- Liste de blocs, similaire à une Section sans titre
+  = Paragraph [Inline]              -- Paragraphe régulier
+  | Section (Maybe String) [Block]  -- Section avec titre optionnel et blocs imbriqués
+  | CodeBlock Block                 -- Bloc de code (contient un Block)
+  | List [Block]                    -- Liste d'éléments
   deriving (Show, Eq)
+```
 
--- Inline représente les éléments textuels à l’intérieur d’un paragraphe
+**Variantes :**
+1. **Paragraph**
+   - Contient une liste d'éléments `Inline`
+   - Représente du texte standard avec formatage
+
+2. **Section**
+   - `Maybe String` - Titre de section optionnel
+   - `[Block]` - Blocs imbriqués dans la section
+   - Peut contenir d'autres blocs de manière récursive
+
+3. **CodeBlock**
+   - Contient un seul `Block` représentant le code
+   - Contient typiquement du texte non formaté
+
+4. **List**
+   - `[Block]` - Éléments de liste (blocs)
+   - Similaire à Section mais sans titre
+
+## Éléments Inline
+
+### `Inline`
+Représente les éléments de texte formaté dans les paragraphes.
+
+```haskell
 data Inline
-  = PlainText String               -- Texte brut
-  | Italic Inline                  -- Texte en italique (Inline imbriqué)
-  | Bold Inline                    -- Texte en gras (Inline imbriqué)
-  | Code Inline                    -- Texte formaté comme du code (Inline imbriqué)
-  | Link String [Inline]           -- Lien : URL + description en Inline
-  | Image String [Inline]          -- Image : source + texte alternatif
+  = PlainText String               -- Texte non formaté
+  | Italic Inline                  -- Texte en italique
+  | Bold Inline                    -- Texte en gras
+  | Code Inline                    -- Code inline
+  | Link String [Inline]           -- Lien avec URL et description
+  | Image String [Inline]          -- Image avec source et texte alternatif
   deriving (Show, Eq)
+```
 
+**Variantes :**
+1. **PlainText**
+   - Texte brut sans formatage
+
+2. **Italic**
+   - Encapsule un autre élément `Inline` en italique
+
+3. **Bold**
+   - Encapsule un autre élément `Inline` en gras
+
+4. **Code**
+   - Encapsule un autre élément `Inline` comme code
+
+5. **Link**
+   - `String` - URL/href
+   - `[Inline]` - Description formatée du lien
+
+6. **Image**
+   - `String` - Chemin/URL de l'image
+   - `[Inline]` - Texte alternatif (peut être formaté)
+
+## Notes d'Utilisation
+
+- La structure est récursive : `Block` peut contenir d'autres `Block` (dans les Sections/Listes), et `Inline` peut encapsuler d'autres `Inline`
+- Les types Maybe indiquent des champs optionnels
+- Tous les types dérivent `Show` et `Eq` pour le débogage et la comparaison
+- Le `CodeBlock` contient un `Block` qui serait typiquement un `Paragraph` avec `PlainText`
+```
