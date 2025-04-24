@@ -63,12 +63,12 @@ Si des options invalides sont fournies, le programme renverra un code d'erreur 8
 
 ```bash
 ./mypandoc -f markdown -i example/example.xml
+```
 
 ## 📄 Structure de Données
 
 Le programme utilise plusieurs types de données pour représenter la structure d'un document. Ces types sont définis comme suit :
 
-```markdown
 # Documentation des Structures de Données de Document
 
 Ce document décrit les types de données Haskell utilisés pour représenter un document structuré avec métadonnées, blocs de contenu et formatage de texte.
