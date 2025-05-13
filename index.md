@@ -52,22 +52,6 @@ make fclean
 make re
 ```
 
-### Compilation avec CMake
-
-```bash
-# Création du répertoire de build
-mkdir build && cd build
-
-# Configuration
-cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
-
-# Compilation
-cmake --build .
-
-# Installation (optionnel)
-cmake --install .
-```
-
 ## Utilisation
 
 ```bash
