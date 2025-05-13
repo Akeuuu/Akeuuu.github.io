@@ -1,253 +1,298 @@
-# mypandoc: A Simplified Document Converter
+# RAYTRACER - VOTRE CPU FAIT BRRRRR!
 
-## 🌟 Introduction
+Un moteur de ray tracing haute performance construit en C++ qui simule le chemin inverse de la lumière pour générer des images numériques réalistes.
 
-`mypandoc` est une version simplifiée de **Pandoc**, un convertisseur de documents populaire et open-source. Ce programme permet de convertir des documents d'un format à un autre, prenant en charge les formats suivants : **XML**, **JSON**, et **Markdown**. Écrit en **Haskell**, il utilise une bibliothèque de parsing personnalisée pour gérer la conversion des fichiers.
+![Exemple de RayTracer](https://via.placeholder.com/800x450)
 
-## 📝 Fonctionnalités
+## Table des matières
 
-Le programme permet de convertir des documents d'un format à un autre, en suivant cette structure :
+1. [Aperçu](#aperçu)
+2. [Installation](#installation)
+3. [Utilisation](#utilisation)
+4. [Format du fichier de scène](#format-du-fichier-de-scène)
+5. [Fonctionnalités](#fonctionnalités)
+   - [Fonctionnalités essentielles](#fonctionnalités-essentielles)
+   - [Fonctionnalités avancées](#fonctionnalités-avancées)
+   - [Améliorations optionnelles](#améliorations-optionnelles)
+6. [Architecture](#architecture)
+   - [Patrons de conception](#patrons-de-conception)
+   - [Structure des interfaces](#structure-des-interfaces)
+   - [Système de plugins](#système-de-plugins)
+7. [Développement](#développement)
+8. [Exemples](#exemples)
+9. [Optimisations de performance](#optimisations-de-performance)
+10. [Dépannage](#dépannage)
 
-- **Formats d'entrée** : XML, JSON, Markdown
-- **Formats de sortie** : XML, JSON, Markdown
+## Aperçu
 
-### Structure d'un Document
+Le projet RayTracer est un moteur de rendu par lancer de rayons permettant de générer des images réalistes en simulant la trajectoire inverse de la lumière. Le programme permet de charger une scène à partir d'un fichier de configuration et de produire une image de haute qualité.
 
-Un document est composé de deux parties principales : l'en-tête (**header**) et le corps (**content**).
+## Installation
 
-#### 1. En-tête
-- **Title** : Le titre du document.
-- **Author** (optionnel) : L'auteur du document.
-- **Date** (optionnel) : La date de création du document.
+### Prérequis
 
-#### 2. Contenu
-Le corps du document contient plusieurs éléments :
-- **Texte** : Séquence de caractères ASCII.
-- **Formatage** : 
-  - Italique
-  - Gras
-  - Code
-- **Liens et Images** : 
-  - Lien : Composé de texte et contenu supplémentaire.
-  - Image : Composé de texte et contenu supplémentaire.
-- **Éléments Structurels** :
-  - Paragraphe
-  - Section
-  - Bloc de code
-- **Listes** :
-  - Liste
-  - Élément de liste
+- GCC/G++ avec support C++17 ou supérieur
+- Make ou CMake
+- Bibliothèque libconfig++
+- SFML (pour l'affichage optionnel)
 
-### Formats Supportés
-
-- **XML** : Le document est structuré avec des balises `<document>`, `<header>` et `<body>`. Le contenu est placé entre ces balises.
-
-- **JSON** : Le document est représenté par un objet JSON avec des clés `header` et `body`. Le titre est contenu dans la clé `title` sous l'objet `header`, et le corps du document est une liste sous la clé `body`.
-
-- **Markdown** : Le document utilise la syntaxe Markdown. Le titre du document est spécifié en haut du fichier sous forme de métadonnées, suivi du contenu principal.
-
-## ⚙️ Utilisation
-
-### Options en Ligne de Commande
-
-Le programme prend en charge les options suivantes :
-
-- `-i` : Chemin vers le fichier d'entrée (obligatoire)
-- `-f` : Format de sortie (obligatoire : xml, json, markdown)
-- `-o` : Chemin vers le fichier de sortie (facultatif)
-- `-e` : Format du fichier d'entrée (facultatif)
-
-Si des options invalides sont fournies, le programme renverra un code d'erreur 84 et affichera un message d'utilisation.
-
-#### Exemple d'utilisation
+### Compilation avec Make
 
 ```bash
-./mypandoc -f markdown -i example/example.xml
+# Compilation du projet
+make
+
+# Nettoyer les fichiers objets
+make clean
+
+# Nettoyer les fichiers objets et l'exécutable
+make fclean
+
+# Recompiler le projet
+make re
 ```
 
-# Documentation des Structures de Données de Document
+### Compilation avec CMake
 
-Ce document décrit les types de données Haskell utilisés pour représenter un document structuré avec métadonnées, blocs de contenu et formatage de texte.
+```bash
+# Création du répertoire de build
+mkdir build && cd build
 
-## Structure du Document
+# Configuration
+cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
 
-Représente un document complet avec un en-tête et un contenu.
+# Compilation
+cmake --build .
 
-```haskell
-data Document = Document
-  { header  :: Header
-  , content :: [Block]
-  } deriving (Show, Eq)
+# Installation (optionnel)
+cmake --install .
 ```
 
-**Champs :**
-- `header` - Métadonnées en haut du document (titre, auteur, date)
-- `content` - Le contenu principal sous forme de liste de blocs
+## Utilisation
 
-### `Header`
-Contient les métadonnées en-tête du document.
-
-```haskell
-data Header = Header
-  { title  :: String
-  , author :: Maybe String
-  , date   :: Maybe String
-  } deriving (Show, Eq)
+```bash
+./raytracer <FICHIER_SCENE>
 ```
 
-**Champs :**
-- `title` - Titre du document (obligatoire)
-- `author` - Nom de l'auteur (optionnel)
-- `date` - Date (optionnelle)
+Où `<FICHIER_SCENE>` est le chemin vers votre fichier de configuration de scène (format libconfig++).
 
-## Blocs de Contenu
+L'image générée sera sauvegardée au format PPM.
 
-### `Block`
-Représente les différents types de blocs de contenu.
+## Format du fichier de scène
 
-```haskell
-data Block
-  = Paragraph [Inline]              -- Paragraphe régulier
-  | Section (Maybe String) [Block]  -- Section avec titre optionnel et blocs imbriqués
-  | CodeBlock Block                 -- Bloc de code (contient un Block)
-  | List [Block]                    -- Liste d'éléments
-  deriving (Show, Eq)
+Le programme utilise des fichiers de configuration au format libconfig++ pour définir les scènes à rendre. Voici un exemple de structure:
+
+```
+# Configuration de la caméra
+camera:
+{
+  resolution = { width = 1920; height = 1080; };
+  position = { x = 0; y = -100; z = 20; };
+  rotation = { x = 0; y = 0; z = 0; };
+  fieldOfView = 72.0; # En degrés
+};
+
+# Primitives dans la scène
+primitives:
+{
+  # Liste des sphères
+  spheres = (
+    { x = 60; y = 5; z = 40; r = 25; color = { r = 255; g = 64; b = 64; }; },
+    { x = -40; y = 20; z = -10; r = 35; color = { r = 64; g = 255; b = 64; }; }
+  );
+
+  # Liste des plans
+  planes = (
+    { axis = "Z"; position = -20; color = { r = 64; g = 64; b = 255; }; }
+  );
+};
+
+# Configuration des lumières
+lights:
+{
+  ambient = 0.4; # Multiplicateur de lumière ambiante
+  diffuse = 0.6; # Multiplicateur de lumière diffuse
+
+  # Liste des lumières ponctuelles
+  point = (
+    { x = 400; y = 100; z = 500; }
+  );
+
+  # Liste des lumières directionnelles
+  directional = ();
+};
 ```
 
-**Variantes :**
-1. **Paragraph**
-   - Contient une liste d'éléments `Inline`
-   - Représente du texte standard avec formatage
+## Fonctionnalités
 
-2. **Section**
-   - `Maybe String` - Titre de section optionnel
-   - `[Block]` - Blocs imbriqués dans la section
-   - Peut contenir d'autres blocs de manière récursive
+### Fonctionnalités essentielles
 
-3. **CodeBlock**
-   - Contient un seul `Block` représentant le code
-   - Contient typiquement un seul paragraphe
+#### Primitives obligatoires
+- ✓ Sphère
+- ✓ Plan
 
-4. **List**
-   - `[Block]` - Éléments de liste (blocs)
-   - Similaire à Section mais sans titre
+#### Transformations obligatoires
+- ✓ Translation
 
-## Éléments Inline
+#### Lumières obligatoires
+- ✓ Lumière directionnelle
+- ✓ Lumière ambiante
 
-### `Inline`
-Représente les éléments de texte formaté dans les paragraphes.
+#### Matériaux obligatoires
+- ✓ Couleur unie
 
-```haskell
-data Inline
-  = PlainText String               -- Texte non formaté
-  | Italic Inline                  -- Texte en italique
-  | Bold Inline                    -- Texte en gras
-  | Code Inline                    -- Code inline
-  | Link String [Inline]           -- Lien avec URL et description
-  | Image String [Inline]          -- Image avec source et texte alternatif
-  deriving (Show, Eq)
+#### Configuration de scène obligatoire
+- ✓ Ajout de primitives à la scène
+- ✓ Configuration de l'éclairage
+- ✓ Configuration de la caméra
+
+#### Interface obligatoire
+- ✓ Sortie vers un fichier PPM (sans interface graphique)
+
+### Fonctionnalités avancées
+
+#### Primitives recommandées
+- ✓ Cylindre
+- ✓ Cône
+
+#### Transformations recommandées
+- ✓ Rotation
+
+#### Lumières recommandées
+- ✓ Ombres portées
+
+### Améliorations optionnelles
+
+#### Primitives optionnelles
+- Cylindre limité (0.5 point)
+- Cône limité (0.5 point)
+- Tore (1 point)
+- Tanglecube (1 point)
+- Triangles (1 point)
+- Fichier .OBJ (1 point)
+- Fractales (2 points)
+- Ruban de Möbius (2 points)
+
+#### Transformations optionnelles
+- Échelle (0.5 point)
+- Cisaillement (0.5 point)
+- Matrice de transformation (2 points)
+- Graphe de scène (2 points)
+
+#### Lumières optionnelles
+- Plusieurs lumières directionnelles (0.5 point)
+- Plusieurs lumières ponctuelles (1 point)
+- Lumière colorée (0.5 point)
+- Modèle de réflexion de Phong (2 points)
+- Occlusion ambiante (2 points)
+
+#### Matériaux optionnels
+- Transparence (0.5 point)
+- Réfraction (1 point)
+- Réflexion (0.5 point)
+- Texture depuis un fichier (1 point)
+- Texture procédurale en damier (1 point)
+- Texture procédurale avec bruit de Perlin (1 point)
+- Normal mapping (2 points)
+
+#### Configuration de scène optionnelle
+- Import d'une scène dans une scène (2 points)
+- Anti-aliasing par suréchantillonnage (0.5 point)
+- Anti-aliasing par suréchantillonnage adaptatif (1 point)
+
+#### Optimisations optionnelles
+- Partitionnement spatial (2 points)
+- Multithreading (1 point)
+- Clustering (3 points)
+
+#### Interface optionnelle
+- Affichage de l'image pendant et après la génération (1 point)
+- Sortie pendant ou après la génération (0.5 point)
+- Aperçu de la scène avec un moteur de rendu basique et rapide (2 points)
+- Rechargement automatique de la scène lors d'un changement de fichier (1 point)
+
+## Architecture
+
+### Patrons de conception
+
+Le projet implémente au moins deux des patrons de conception suivants:
+- Factory
+- Builder
+- Composite
+- Decorator
+- Observer
+- State
+- Mediator
+
+### Structure des interfaces
+
+Pour permettre l'extensibilité, le projet utilise des interfaces au moins pour les primitives et les lumières.
+
+### Système de plugins
+
+Un système de plugins optionnel permet d'étendre les fonctionnalités du moteur de rendu sans réécrire le code. Les plugins sont des bibliothèques dynamiques (.so) chargées au moment de l'exécution.
+
+Les plugins doivent être stockés dans le répertoire `./plugins/` et l'exécutable ne doit pas être lié directement à ces plugins.
+
+Domaines possibles pour les plugins:
+- Primitives
+- Lumières
+- Chargeurs de scènes
+- Interface utilisateur graphique
+- Moteurs de rendu principaux
+- Effets optiques
+- Etc.
+
+## Développement
+
+### Bibliothèques autorisées
+
+Les seules bibliothèques autorisées pour les fonctionnalités obligatoires sont:
+- La bibliothèque standard C++
+- libconfig++ (pour l'analyse des fichiers de configuration de scène)
+- SFML (pour l'affichage)
+
+Des bibliothèques supplémentaires peuvent être utilisées pour les fonctionnalités bonus avec l'accord de l'équipe pédagogique.
+
+### Gestion des erreurs
+
+Les messages d'erreur doivent être écrits sur la sortie d'erreur, et le programme doit se terminer avec le code d'erreur 84 (0 s'il n'y a pas d'erreur).
+
+## Exemples
+
+Organisation recommandée pour les démos et captures d'écran:
+
+```
+./scenes/
+  demo_cone.cfg
+  demo_cylinder.cfg
+  demo_plane.cfg
+  demo_sphere.cfg
+  light_point.cfg
+  light_directional.cfg
+  ...
+
+./screenshots/
+  demo_cone.ppm
+  demo_cylinder.ppm
+  demo_plane.ppm
+  demo_sphere.ppm
+  light_point.ppm
+  light_directional.ppm
+  ...
 ```
 
-**Variantes :**
-1. **PlainText**
-   - Texte brut sans formatage
+## Optimisations de performance
 
-2. **Italic**
-   - Encapsule un autre élément `Inline` en italique
+Plusieurs techniques d'optimisation peuvent être implémentées pour améliorer les performances:
+- Multithreading pour exploiter pleinement les processeurs multi-cœurs
+- Partitionnement spatial pour réduire le nombre de tests d'intersection
+- Clustering pour le calcul distribué
+- Techniques d'anti-aliasing optimisées
 
-3. **Bold**
-   - Encapsule un autre élément `Inline` en gras
+## Dépannage
 
-4. **Code**
-   - Encapsule un autre élément `Inline` comme code
-
-5. **Link**
-   - `String` - URL/href
-   - `[Inline]` - Description formatée du lien
-
-6. **Image**
-   - `String` - Chemin/URL de l'image
-   - `[Inline]` - Texte alternatif (peut être formaté)
-
-## Notes d'Utilisation
-
-- La structure est récursive : `Block` peut contenir d'autres `Block` (dans les Sections/Listes), et `Inline` peut encapsuler d'autres `Inline`
-- Les types Maybe indiquent des champs optionnels
-- Tous les types dérivent `Show` et `Eq` pour le débogage et la comparaison
-- Le `CodeBlock` contient un `Block` qui serait typiquement un `Paragraph` avec `PlainText`
-
-## Implémentation d'Extensions
-
-Pour ajouter un nouveau format (par exemple YAML), vous devez suivre ce pattern :
-
-1. Créer deux modules de conversion :
-   ```haskell
-    -- Conversion depuis le nouveau format
-    YamlToDoc.hs
-    -- Conversion vers le nouveau format
-    DocToYaml.hs
-   ```
-
-2. Implémenter les fonctions principales :
-   ```haskell
-    -- Dans YamlToDoc.hs
-    yamlToDoc :: YamlValue -> Document
-
-    -- Dans DocToYaml.hs
-    docToYaml :: Document -> YamlValue
-   ```
-
-3. Ajouter le parser dans Parser.hs :
-   ```haskell
-    parseYaml :: Parser YamlValue
-   ```
-
-4. Implémenter la fonction d'écriture :
-   ```haskell
-    writeYaml :: Document -> String -> IO ()
-    writeYaml doc outputPath =
-        if outputPath /= ""
-            then writeFile outputPath (printYaml (docToYaml doc))
-            else putStrLn (printYaml (docToYaml doc))
-   ```
-
-5. Ajouter le support dans la fonction principale :
-   ```haskell
-    pandocYaml :: String -> String -> Conf -> IO ()
-    pandocYaml content outputPath conf =
-        case runParser parseYaml content of
-            Nothing -> putStrLn "Échec de l'analyse YAML" >> exitError
-            Just (value, _) ->
-                case fromMaybe "" (outForm conf) of
-                    "json" -> writeJson (yamlToDoc value) outputPath
-                    "xml" -> writeXml (yamlToDoc value) outputPath
-                    "markdown" -> writeMd (yamlToDoc value) outputPath
-                    "yaml" -> writeYaml (yamlToDoc value) outputPath
-                    _ -> exitError
-   ```
-
-6. Mettre à jour writePandoc :
-   ```haskell
-    writePandoc :: Conf -> String -> String -> IO ()
-    writePandoc conf content outputPath =
-        case fromMaybe "" (inForm conf) of
-            "json" -> pandocJson content outputPath conf
-            "xml" -> pandocXml content outputPath conf
-            "markdown" -> pandocMarkdown content outputPath conf
-            "yaml" -> pandocYaml content outputPath conf
-            "" -> guessFormat content outputPath conf
-            _ -> exitError
-   ```
-
-### Architecture Type
-
-Pour chaque nouveau format X, implémenter :
-
-1. XToDoc.hs (conversion vers Document)
-2. DocToX.hs (conversion depuis Document)
-3. Parser X dans Parser.hs
-4. Fonction pandocX suivant le même pattern
-5. Fonction writeX pour l'output
-
-Le système est conçu pour que tout nouveau format puisse être converti vers/à partir du type Document, qui sert de format intermédiaire.
-```
+### Problèmes courants
+- **Erreur de segmentation**: Vérifiez la gestion de la mémoire et les limites des tableaux
+- **Artefacts visuels**: Vérifiez les calculs d'intersection et de normales
+- **Performance médiocre**: Envisagez d'implémenter des optimisations comme le multithreading
