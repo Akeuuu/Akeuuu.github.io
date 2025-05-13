@@ -13,7 +13,6 @@ Un moteur de ray tracing haute performance construit en C++ qui simule le chemin
 5. [Fonctionnalités](#fonctionnalités)
    - [Fonctionnalités essentielles](#fonctionnalités-essentielles)
    - [Fonctionnalités avancées](#fonctionnalités-avancées)
-   - [Améliorations optionnelles](#améliorations-optionnelles)
 6. [Architecture](#architecture)
    - [Patrons de conception](#patrons-de-conception)
    - [Structure des interfaces](#structure-des-interfaces)
@@ -32,7 +31,7 @@ Le projet RayTracer est un moteur de rendu par lancer de rayons permettant de g�
 ### Prérequis
 
 - GCC/G++ avec support C++17 ou supérieur
-- Make ou CMake
+- Make
 - Bibliothèque libconfig++
 - SFML (pour l'affichage optionnel)
 
@@ -55,7 +54,7 @@ make re
 ## Utilisation
 
 ```bash
-./raytracer <FICHIER_SCENE>
+./raytracer <FICHIER_SCENE> -SFML(optionnel)
 ```
 
 Où `<FICHIER_SCENE>` est le chemin vers votre fichier de configuration de scène (format libconfig++).
@@ -66,44 +65,92 @@ L'image générée sera sauvegardée au format PPM.
 
 Le programme utilise des fichiers de configuration au format libconfig++ pour définir les scènes à rendre. Voici un exemple de structure:
 
+(
+  NB/ les parties suivantes sont indispensables même vide : 
+    - camera
+    - primitives
+    - objects
+    - scenes
+    - lights
+)
+
 ```
-# Configuration de la caméra
-camera:
-{
-  resolution = { width = 1920; height = 1080; };
-  position = { x = 0; y = -100; z = 20; };
-  rotation = { x = 0; y = 0; z = 0; };
-  fieldOfView = 72.0; # En degrés
+// Configuration of the camera
+camera : {
+    resolution = { width = 1920; height = 1080; };
+    origin = { x = 0; y = -100; z = 20; };
+    vector = { x = 1; y = 1; z = 1; };
+    fieldOfView = 72.0;
 };
 
-# Primitives dans la scène
-primitives:
-{
-  # Liste des sphères
-  spheres = (
-    { x = 60; y = 5; z = 40; r = 25; color = { r = 255; g = 64; b = 64; }; },
-    { x = -40; y = 20; z = -10; r = 35; color = { r = 64; g = 255; b = 64; }; }
-  );
-
-  # Liste des plans
-  planes = (
-    { axis = "Z"; position = -20; color = { r = 64; g = 64; b = 255; }; }
-  );
+objects : {
+    obj = (
+        {
+            path = "Objects/mita.obj";
+        }
+        {
+            path = "Objects/teapot.obj";
+        }
+    );
 };
 
-# Configuration des lumières
-lights:
-{
-  ambient = 0.4; # Multiplicateur de lumière ambiante
-  diffuse = 0.6; # Multiplicateur de lumière diffuse
+scenes : {
+    scene = (
+        {
+            path = "otherscene.cfg";
+        },
+        {
+            path = "scene2.cfg";
+        }
+    );
 
-  # Liste des lumières ponctuelles
-  point = (
-    { x = 400; y = 100; z = 500; }
-  );
+    Pour plusieurs scènes :
+    scene_list = (
+        {
+            path = "scene1.cfg";
+        },
+        {
+            path = "scene2.cfg";
+        }
+    );
+};
 
-  # Liste des lumières directionnelles
-  directional = ();
+// Primitives in the scene
+primitives : {
+    // List of spheres
+    plane = (
+        {
+            axis = "Z";
+            position = -20;
+            color = { r = 64; g = 64; b = 255; };
+        }
+    );
+};
+
+// Light configuration
+lights : {
+    ambientlight = (
+        {
+            intensity = 0.1;
+            color = { r = 255; g = 255; b = 255; };
+        }
+    );
+
+    directionallight = (
+        {
+            intensity = 0.2;
+            direction = { x = 10; y = 10; z = -10; };
+            color = { r = 140; g = 255; b = 255; };
+        }
+    );
+    pointlight = (
+        {
+            origin = { x = 0; y = -35; z = 20; };
+            intensity = 1.0;
+            color = { r = 255; g = 255; b = 255; };
+        }
+    );
+    falcutatives options : color = { r = 255, g = 255, b = 255 };
 };
 ```
 
@@ -145,68 +192,12 @@ lights:
 #### Lumières recommandées
 - ✓ Ombres portées
 
-### Améliorations optionnelles
-
-#### Primitives optionnelles
-- Cylindre limité (0.5 point)
-- Cône limité (0.5 point)
-- Tore (1 point)
-- Tanglecube (1 point)
-- Triangles (1 point)
-- Fichier .OBJ (1 point)
-- Fractales (2 points)
-- Ruban de Möbius (2 points)
-
-#### Transformations optionnelles
-- Échelle (0.5 point)
-- Cisaillement (0.5 point)
-- Matrice de transformation (2 points)
-- Graphe de scène (2 points)
-
-#### Lumières optionnelles
-- Plusieurs lumières directionnelles (0.5 point)
-- Plusieurs lumières ponctuelles (1 point)
-- Lumière colorée (0.5 point)
-- Modèle de réflexion de Phong (2 points)
-- Occlusion ambiante (2 points)
-
-#### Matériaux optionnels
-- Transparence (0.5 point)
-- Réfraction (1 point)
-- Réflexion (0.5 point)
-- Texture depuis un fichier (1 point)
-- Texture procédurale en damier (1 point)
-- Texture procédurale avec bruit de Perlin (1 point)
-- Normal mapping (2 points)
-
-#### Configuration de scène optionnelle
-- Import d'une scène dans une scène (2 points)
-- Anti-aliasing par suréchantillonnage (0.5 point)
-- Anti-aliasing par suréchantillonnage adaptatif (1 point)
-
-#### Optimisations optionnelles
-- Partitionnement spatial (2 points)
-- Multithreading (1 point)
-- Clustering (3 points)
-
-#### Interface optionnelle
-- Affichage de l'image pendant et après la génération (1 point)
-- Sortie pendant ou après la génération (0.5 point)
-- Aperçu de la scène avec un moteur de rendu basique et rapide (2 points)
-- Rechargement automatique de la scène lors d'un changement de fichier (1 point)
-
 ## Architecture
 
 ### Patrons de conception
 
-Le projet implémente au moins deux des patrons de conception suivants:
 - Factory
 - Builder
-- Composite
-- Decorator
-- Observer
-- State
-- Mediator
 
 ### Structure des interfaces
 
@@ -268,15 +259,47 @@ Organisation recommandée pour les démos et captures d'écran:
 
 ## Optimisations de performance
 
-Plusieurs techniques d'optimisation peuvent être implémentées pour améliorer les performances:
-- Multithreading pour exploiter pleinement les processeurs multi-cœurs
-- Partitionnement spatial pour réduire le nombre de tests d'intersection
-- Clustering pour le calcul distribué
-- Techniques d'anti-aliasing optimisées
+- Multithreading 
 
-## Dépannage
+## Comment ajouter une nouvelle primitive
 
-### Problèmes courants
-- **Erreur de segmentation**: Vérifiez la gestion de la mémoire et les limites des tableaux
-- **Artefacts visuels**: Vérifiez les calculs d'intersection et de normales
-- **Performance médiocre**: Envisagez d'implémenter des optimisations comme le multithreading
+L’ajout d’une primitive dans le raytracer se fait en plusieurs étapes essentielles :
+
+---
+
+### Étape 1 — Ajouter le parsing
+
+Ajoute la lecture de ta nouvelle primitive dans le fichier :
+
+📂 `Utils/Parser/parser.cpp`
+
+Cela permettra d’interpréter les données depuis le fichier `.cfg` de scène.
+
+---
+
+### Étape 2 — Créer la classe de la primitive
+
+Crée un nouveau dossier pour ta primitive dans :
+
+📂 `Primitives/NomDeTaPrimitive/`
+
+Et ajoute un fichier `NomDeTaPrimitive.cpp` contenant :
+
+- Un constructeur qui initialise les champs à partir des données du `.cfg`.
+- Une méthode :
+
+```cpp
+DataHits hits(const RayTracer::Ray& ray);
+
+using DataHits = std::tuple<double, Math::Point3D, Math::Vector3D>;
+```
+
+### Ce tuple contient :
+
+    double : la distance entre la caméra et le point d’intersection
+
+    Math::Point3D : la position du point touché
+
+    Math::Vector3D : la normale à la surface au point d’impact
+
+Une fois ces deux étapes terminées, ta primitive est prête à être utilisée dans une scène .cfg !
