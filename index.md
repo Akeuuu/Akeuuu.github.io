@@ -20,7 +20,7 @@ Un moteur de ray tracing haute performance construit en C++ qui simule le chemin
 7. [Développement](#développement)
 8. [Exemples](#exemples)
 9. [Optimisations de performance](#optimisations-de-performance)
-10. [Dépannage](#dépannage)
+10. [Ajouter une primitive](#ajouter-une-primitive)
 
 ## Aperçu
 
@@ -261,7 +261,7 @@ Organisation recommandée pour les démos et captures d'écran:
 
 - Multithreading 
 
-## Comment ajouter une nouvelle primitive
+## Ajouter une primitive
 
 L’ajout d’une primitive dans le raytracer se fait en plusieurs étapes essentielles :
 
